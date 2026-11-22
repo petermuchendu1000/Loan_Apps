@@ -1,0 +1,15 @@
+{
+  "name": "tala-kenya-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "npm run build && node scripts/preview.mjs",
+    "test": "npm run build && node --test",
+    "caas:check": "node scripts/check-caas.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "miniflare": "4.20260730.0"
+  }
+}

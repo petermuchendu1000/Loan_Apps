@@ -1,0 +1,18 @@
+.verification { padding-block-start: clamp(1.4rem, 7vw, 6rem); }
+.verification-layout { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: clamp(1.4rem, 6vw, 6rem); }
+.verification-card { border-top: .25rem solid #7adfca; }
+.verification-progress { display: flex; flex-wrap: wrap; gap: .45rem .95rem; margin: 0 0 1.5rem; padding: 0; list-style: none; }
+.verification-progress li { display: flex; align-items: center; gap: .35rem; color: var(--muted); font-size: .875rem; font-weight: 750; }
+.verification-progress li[aria-current="step"] { color: var(--green); font-weight: 800; }
+.verification-progress li[aria-current="step"]::before { content: ""; width: .75rem; height: .15rem; border-radius: .15rem; background: currentColor; }
+.verification-card .button { min-height: 3rem; }
+.verification-card .text-link { font-size: .92rem; }
+.verification-card .secondary-links { margin-top: 1rem; }
+.verification-card .small-copy a { text-decoration-thickness: 1px; text-underline-offset: .14em; }
+
+@media (max-width: 47rem) {
+  .verification-layout { grid-template-columns: 1fr; }
+  .verification-progress { margin-bottom: 1.1rem; }
+  .verification-card .form-actions { align-items: stretch; }
+  .verification-card .form-actions .button { flex-basis: 100%; }
+}

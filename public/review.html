@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en-KE">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#f7f9f3">
+  <title>Application review | Tala Kenya</title>
+  <link rel="icon" href="/assets/tala-app-icon.png">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/borrow.css">
+  <link rel="stylesheet" href="/application.css">
+  <script type="module" src="/review.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="/" aria-label="Tala Kenya home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-market">Kenya</span>
+      </a>
+    </div>
+  </header>
+  <main class="wrap portal" id="main">
+    <div class="review-heading">
+      <div>
+        <p class="eyebrow"><span></span> Staff workspace</p>
+        <h1>Review applications.</h1>
+      </div>
+      <button class="button button-secondary" type="button" id="refresh">Refresh queue</button>
+    </div>
+    <p id="review-message" role="status">Loading applications…</p>
+    <ul class="review-list" id="review-list" aria-label="Applications"></ul>
+    <button class="button button-secondary review-more" type="button" id="review-more" hidden>Load more</button>
+  </main>
+</body>
+</html>
