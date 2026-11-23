@@ -70,6 +70,10 @@ async function loadApplication(body) {
       method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
     } : {});
     const result = await response.json();
+    if (response.status === 401 && result.signIn) {
+      location.replace("/signin?next=%2Fapply");
+      return;
+    }
     if (!response.ok) throw new Error(result.error || "Unable to load your application.");
     render(result.application, Boolean(body || button));
   } catch (error) {

@@ -100,6 +100,7 @@ async function request(action, body = {}) {
   const options = action ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {};
   const response = await fetch(path, options);
   const payload = await response.json().catch(() => ({}));
+  if (response.status === 401 && payload.signIn) location.replace("/signin?next=%2Fverify");
   if (!response.ok) throw new Error(payload.error ?? "Verification is temporarily unavailable. Please try again.");
   return payload.verification;
 }

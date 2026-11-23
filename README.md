@@ -14,6 +14,36 @@ npm run dev
 
 Open `http://127.0.0.1:8175/verify` for the verification page or `http://127.0.0.1:8175/borrow` for sample borrowing. The loopback preview uses a sample owner and a fresh local D1 database on each run. The private Site derives the owner from its authenticated Sites identity. Tests cover SMS challenge handling, Didit session binding, duplicate requests, failed transfers, repayments and the CaaS contract.
 
+## Supabase database
+
+The migration in `supabase/migrations` creates the Postgres tables for borrower accounts, verification, SMS limits, applications, and reviewer contact access. Tables are in the private `tala_private` schema. The Site calls fixed database functions from `tala_api`. Those functions are available to the backend service role only.
+
+Link the Supabase CLI to the intended project, review the pending migration with `supabase db push --linked --dry-run`, and apply it with `supabase db push --linked`. In the hosted project's Data API settings, add `tala_api` to the exposed schemas. Keep `tala_private` outside that list.
+
+Set these values in the Site's server runtime settings:
+
+| Variable | Value |
+| --- | --- |
+| `SUPABASE_URL` | The project's HTTPS URL, such as `https://projectref.supabase.co` |
+| `SUPABASE_SECRET_KEY` | The project's backend `sb_secret_` key |
+| `TALA_DATABASE` | Set to `supabase` after the migration and API setup are verified |
+
+The Site uses D1 by default. If switching an existing deployment, inventory and copy its data before enabling the Supabase backend. Stop writes during the final copy and verify the row counts before reopening intake. Keep the existing application encryption and OTP signing keys so migrated records remain usable.
+
+- [Supabase migration deployment](https://supabase.com/docs/guides/deployment/database-migrations)
+- [Exposing a custom API schema](https://supabase.com/docs/guides/api/using-custom-schemas)
+
+## Borrower signup and sign-in
+
+`/signup` verifies a Kenyan mobile number by SMS, then asks the borrower to create and confirm a four-digit web PIN. The same phone verification follows the account to `/verify` for Didit identity checks and then to `/apply`. Returning borrowers use `/signin` with their registered mobile number and web PIN. Web sign-in adds an SMS code before issuing a session.
+
+`/forgot-pin` checks the submitted ID number against the web account's approved Didit result and sends a temporary SMS code. Completing recovery invalidates the account's existing sessions. Borrowers who have yet to verify their ID can use Tala support. The Android account uses Tala’s own identity service. Existing Android account linking requires Tala's approved integration.
+
+Set `TALA_BORROWER_AUTH=web` and supply `TALA_BORROWER_AUTH_KEY` as a base64url-encoded 32-byte secret in the server runtime. Apply the database migrations and configure SMS first. Configure Didit to enable identity verification and PIN recovery. Store the keys in runtime secrets. Staff review uses Sites authentication and the reviewer allowlist.
+
+- [Tala Kenya registration and SMS verification](https://tala.co.ke/loan-app-help/loan-application-process/)
+- [Tala Kenya PIN recovery](https://tala.co.ke/faq/)
+
 ## Account verification
 
 Configure runtime variables in the Site’s secret settings. Use provider test credentials with `VERIFICATION_ENV=sandbox`. For production, use Tala-approved provider accounts and `VERIFICATION_ENV=live`. Test and live provider applications should have separate API keys and data.
