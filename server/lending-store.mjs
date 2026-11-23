@@ -200,6 +200,55 @@ function store(execute) {
         UPDATE borrower_sessions SET revoked_at = ?2 WHERE token_hash = ?1 AND revoked_at IS NULL
       `);
     },
+
+    repaymentAccount(environment, owner) {
+      return execute("repayment_account", { environment, owner }, "first", `
+        SELECT customer_ref, phone_hash FROM repayment_accounts WHERE environment = ? AND owner = ?
+      `);
+    },
+
+    listRepayments(environment, owner) {
+      return execute("list_repayments", { environment, owner }, "all", `
+        SELECT id, amount, state, receipt, result_code, created_at, updated_at FROM repayment_attempts
+        WHERE environment = ? AND owner = ? ORDER BY created_at DESC, id DESC LIMIT 20
+      `);
+    },
+
+    activeRepayment(environment, owner) {
+      return execute("active_repayment", { environment, owner }, "first", `
+        SELECT id, amount, state, receipt, result_code, created_at, updated_at FROM repayment_attempts
+        WHERE environment = ? AND owner = ? AND state NOT IN ('credited', 'failed')
+      `);
+    },
+
+    repayment(environment, id) {
+      return execute("repayment", { environment, id }, "first", `
+        SELECT * FROM repayment_attempts WHERE environment = ? AND id = ?
+      `);
+    },
+
+    createRepayment(record) {
+      const { id, environment, owner, customer_ref, loan_id, amount, phone_sealed, phone_hash, created_at } = record;
+      return execute("create_repayment", {
+        id, environment, owner, customer_ref, loan_id, amount, phone_sealed, phone_hash, created_at,
+      }, "run", `
+        INSERT INTO repayment_attempts (id, environment, owner, customer_ref, loan_id, amount, phone_sealed, state, created_at, updated_at)
+        SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, 'starting', ?9, ?9 FROM repayment_accounts
+        WHERE environment = ?2 AND owner = ?3 AND customer_ref = ?4 AND phone_hash = ?8
+        ON CONFLICT DO NOTHING
+      `);
+    },
+
+    updateRepayment(record) {
+      const { environment, id, revision, state, checkout_id, merchant_id, receipt, paid_at, result_code, next_check_at, updated_at } = record;
+      return execute("update_repayment", {
+        environment, id, revision, state, checkout_id, merchant_id, receipt, paid_at, result_code, next_check_at, updated_at,
+      }, "run", `
+        UPDATE repayment_attempts SET state = ?4, checkout_id = ?5, merchant_id = ?6, receipt = ?7, paid_at = ?8,
+          result_code = ?9, next_check_at = ?10, updated_at = ?11, revision = revision + 1
+        WHERE environment = ?1 AND id = ?2 AND revision = ?3
+      `);
+    },
   };
 }
 

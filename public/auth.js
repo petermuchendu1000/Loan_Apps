@@ -1,7 +1,7 @@
 const path = location.pathname.replace(/\/$/, "");
 const mode = { "/signup": "signup", "/forgot-pin": "reset" }[path] ?? "signin";
 const requested = new URLSearchParams(location.search).get("next");
-const next = ["/apply", "/verify", "/borrow"].includes(requested) ? requested : "/verify";
+const next = ["/apply", "/verify", "/borrow", "/repay"].includes(requested) ? requested : "/verify";
 const suffix = "?next=" + encodeURIComponent(next);
 const card = document.querySelector("#account");
 const support = "https://tala.co.ke/contact/";

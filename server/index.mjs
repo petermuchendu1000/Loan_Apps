@@ -5,6 +5,7 @@ import { VerificationProviderError } from "./verification-providers.mjs";
 import { isLendingReviewer, lendingApplicationRequest, lendingReviewRequest } from "./lending-applications.mjs";
 import { lendingStore } from "./lending-store.mjs";
 import { borrowerAuthRequest, signedInBorrower } from "./borrower-auth.mjs";
+import { repaymentCallback, repaymentRequest } from "./repayments.mjs";
 
 const headers = {
   "content-security-policy": "default-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'",
@@ -80,8 +81,18 @@ async function changeAccount(db, owner, id, action, body) {
   throw new JourneyError("The account is busy. Try again.", 503);
 }
 
-async function handleApi(request, env, url) {
+async function handleApi(request, env, url, context) {
   const db = lendingStore(env);
+  if (url.pathname === "/api/repayments/mpesa-callback") {
+    if (request.method !== "POST" || !db) return json({ error: "Callback not found." }, 404);
+    const followUp = await repaymentCallback(db, env, url, () => requestBody(request));
+    if (followUp) {
+      const work = followUp().catch(() => console.error("Repayment reconciliation deferred"));
+      if (context) context.waitUntil(work);
+      else await work;
+    }
+    return json({ ResultCode: 0, ResultDesc: "Accepted" });
+  }
   const auth = /^\/api\/auth(?:\/(start|verify|finish|signout))?$/.exec(url.pathname);
   if (auth) {
     const action = auth[1] ?? "status";
@@ -101,6 +112,18 @@ async function handleApi(request, env, url) {
     ? { error: "Sign in to your web account to continue.", signIn: "/signin" }
     : { error: "Sign in to the private preview to continue." }, 401);
   if (!db) return json({ error: "The account service is unavailable." }, 503);
+  const repayment = /^\/api\/repayments(?:\/(start|check))?$/.exec(url.pathname);
+  if (repayment) {
+    const action = repayment[1] ?? "status";
+    if (action === "status" && request.method === "GET") {
+      return json(await repaymentRequest(db, env, owner, action));
+    }
+    if (action === "status" || request.method !== "POST") return json({ error: "This endpoint is unavailable." }, 404);
+    if (request.headers.get("origin") !== url.origin) return json({ error: "Open the repayment page to continue." }, 403);
+    const body = await requestBody(request);
+    const id = action === "start" ? request.headers.get("idempotency-key") : body.id;
+    return json(await repaymentRequest(db, env, owner, action, id, body));
+  }
   if (url.pathname === "/api/applications" || url.pathname === "/api/applications/submit") {
     if (request.method === "GET" && url.pathname === "/api/applications") {
       return json({ application: await lendingApplicationRequest(env, owner, "status") });
@@ -152,6 +175,7 @@ function serveAsset(request, url) {
     "/": "/index.html", "/borrow": "/borrow.html", "/borrow/": "/borrow.html",
     "/verify": "/verify.html", "/verify/": "/verify.html",
     "/apply": "/apply.html", "/apply/": "/apply.html",
+    "/repay": "/repay.html", "/repay/": "/repay.html",
     "/review": "/review.html", "/review/": "/review.html",
     "/signin": "/auth.html", "/signin/": "/auth.html",
     "/signup": "/auth.html", "/signup/": "/auth.html",
@@ -171,7 +195,7 @@ function serveAsset(request, url) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, context) {
     const url = new URL(request.url);
     if (["/review", "/review/", "/review.html"].includes(url.pathname) &&
         (!authenticatedOwner(request, env, url) || !isLendingReviewer(env, request.headers.get("oai-authenticated-user-email")))) {
@@ -181,7 +205,7 @@ export default {
     }
     if (!url.pathname.startsWith("/api/")) return serveAsset(request, url);
     try {
-      return await handleApi(request, env, url);
+      return await handleApi(request, env, url, context);
     } catch (error) {
       if (error instanceof JourneyError) return json({ error: error.message }, error.status);
       if (error instanceof VerificationProviderError) {

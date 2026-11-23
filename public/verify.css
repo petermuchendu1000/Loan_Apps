@@ -10,9 +10,16 @@
 .verification-card .secondary-links { display: flex; flex-wrap: wrap; gap: .6rem 1rem; margin-top: 1rem; }
 #account .form-actions form { margin: 0; }
 .verification-card .small-copy a { text-decoration-thickness: 1px; text-underline-offset: .14em; }
+.repayment-layout { grid-template-areas: "heading online" "paybill online"; grid-template-rows: min-content 1fr; row-gap: 1.25rem; align-items: start; }
+.repayment-layout .portal-heading { grid-area: heading; }
+.repayment-paybill { grid-area: paybill; }
+#repayment { grid-area: online; }
+.repayment-layout .summary-rows dd { min-width: 0; overflow-wrap: anywhere; }
+.repayment-layout .summary-rows + h3 { margin-top: 1.5rem; }
 
 @media (max-width: 47rem) {
   .verification-layout { grid-template-columns: 1fr; }
+  .repayment-layout { grid-template-areas: "heading" "online" "paybill"; grid-template-rows: auto; }
   .verification-progress { margin-bottom: 1.1rem; }
   .verification-card .form-actions { align-items: stretch; }
   .verification-card .form-actions .button { flex-basis: 100%; }

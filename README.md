@@ -35,6 +35,8 @@ The Site uses D1 by default. If switching an existing deployment, inventory and 
 
 ## Borrower signup and sign-in
 
+`npm run dev:auth` starts a local account preview at `http://127.0.0.1:8176/_local/auth`. Use the test number and SMS inbox shown on that page to try signup, sign-in, and PIN recovery. The preview uses an in-memory database and simulated SMS and identity checks.
+
 `/signup` verifies a Kenyan mobile number by SMS, then asks the borrower to create and confirm a four-digit web PIN. The same phone verification follows the account to `/verify` for Didit identity checks and then to `/apply`. Returning borrowers use `/signin` with their registered mobile number and web PIN. Web sign-in adds an SMS code before issuing a session.
 
 `/forgot-pin` checks the submitted ID number against the web account's approved Didit result and sends a temporary SMS code. Completing recovery invalidates the account's existing sessions. Borrowers who have yet to verify their ID can use Tala support. The Android account uses Tala’s own identity service. Existing Android account linking requires Tala's approved integration.
@@ -72,6 +74,30 @@ If Didit restricts callback domains, allowlist the hosted Site origin in the Did
 The application becomes available once phone and identity providers, the application encryption key and an authorized reviewer are configured. The borrower verifies their phone and identity, confirms their consent, and submits the requested amount and purpose. The server rechecks the Didit decision and matches the entered number against the verified phone. The applicant receives a durable reference and status.
 
 The staff queue shows masked contact details and the Didit session reference. Opening a full contact number creates an audit record. Starting a review changes the applicant’s status to under review. The queue records applications for manual review. Credit decisions, offer acceptance, lending and M-PESA settlement are handled separately by Tala.
+
+## Loan repayments
+
+Open `/repay` for Tala’s Paybill instructions, or sign in to view a linked loan’s balance and request M-PESA Xpress. The online form accepts a full or partial payment in whole Kenyan shillings, subject to the current balance from Tala. Payments made outside the website appear in the Tala ledger once credited.
+
+For local testing, run `npm run dev:repay` and open `http://127.0.0.1:8177/_local/auth`. Create a test account and complete the simulated identity check to link a KSh 4,250 loan. Start a repayment, then use **M-PESA prompts** in the local inbox to approve or cancel it.
+
+Hosted M-PESA Xpress requires an authorized Tala CaaS and Safaricom settlement arrangement. Set `TALA_REPAYMENT_ENV` to the same value as `VERIFICATION_ENV`. Configure the Tala CaaS credentials below and provision `repayment_accounts` with the approved environment, web owner, Tala partner customer reference and corresponding verified phone hash. The linking integration must establish ownership of the Tala loan account before creating that mapping. The website gets its balance and transaction history from Tala.
+
+| Variable | Value |
+| --- | --- |
+| `MPESA_CONSUMER_KEY`, `MPESA_CONSUMER_SECRET` | Daraja credentials for the selected environment |
+| `MPESA_SHORTCODE`, `MPESA_PASSKEY` | Tala-approved repayment collection shortcode and its M-PESA Xpress passkey |
+| `MPESA_CALLBACK_URL` | Public HTTPS relay endpoint registered for M-PESA Xpress callbacks |
+| `MPESA_CALLBACK_KEY` | Server-only, base64url-encoded 32-byte callback secret |
+
+On private Sites, deploy the optional Supabase `mpesa-callback` Edge Function and use its HTTPS URL as `MPESA_CALLBACK_URL`. Set the same `TALA_REPAYMENT_ENV` and `MPESA_CALLBACK_KEY` in the function secrets, plus `TALA_SITE_CALLBACK_URL` pointing to the Site’s `/api/repayments/mpesa-callback` and `TALA_SITE_SERVICE_TOKEN` containing the Site’s server-only service authorization token.
+
+The callback supplies receipt details. The server checks Safaricom’s authenticated status and matches the receipt, loan and amount against Tala’s ledger before displaying a credit. If an initiation or ledger post has an uncertain outcome, check the stored reference with Safaricom or Tala before sending another payment. Use Tala’s approved partner collection arrangement for Xpress, particularly if the merchant automatically posts repayments to Tala.
+
+- [Tala Kenya repayment instructions](https://tala.co.ke/loan-app-help/how-to-repay/)
+- [Safaricom Daraja](https://developer.safaricom.co.ke/)
+- [Tala repayment notification](https://docs.tala.co/#/api-reference/repayment-notification)
+- [Tala repayment status](https://docs.tala.co/#/api-reference/repayment-status)
 
 ## Tala integration
 
