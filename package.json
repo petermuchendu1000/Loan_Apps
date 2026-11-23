@@ -5,6 +5,8 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "dev": "npm run build && node scripts/preview.mjs",
+    "dev:auth": "npm run build && node scripts/preview.mjs --auth",
+    "dev:repay": "npm run build && node scripts/preview.mjs --repayment",
     "test": "npm run build && node --test",
     "caas:check": "node scripts/check-caas.mjs"
   },

@@ -36,7 +36,7 @@ function diditLink(value) {
 
 async function providerJson(fetcher, provider, url, options) {
   try {
-    const response = await fetcher(url, { ...options, redirect: "error", signal: AbortSignal.timeout(12_000) });
+    const response = await fetcher(url, { ...options, redirect: "manual", signal: AbortSignal.timeout(12_000) });
     if (!response.ok) throw new VerificationProviderError(provider, response.status);
     return await response.json();
   } catch (error) {
@@ -60,6 +60,14 @@ export function createVerificationProviders(settings, fetcher = fetch) {
     }
     const checks = Array.isArray(result.id_verifications) ? result.id_verifications : [];
     return { result, state, approvedChecks: checks.filter((check) => statusFor(check?.status) === "approved") };
+  }
+
+  async function approvedNationalIds(identity) {
+    const { result, state, approvedChecks } = await decision(identity);
+    if (result.environment !== settings.environment || state !== "approved") return [];
+    return approvedChecks.filter((check) => settings.environment === "sandbox" ||
+      (["KE", "KEN"].includes(check.issuing_state) &&
+        ["ID", "ID CARD", "IDENTITY CARD"].includes(String(check.document_type).trim().toUpperCase().replaceAll("_", " "))));
   }
 
   return {
@@ -112,10 +120,14 @@ export function createVerificationProviders(settings, fetcher = fetch) {
     },
 
     async hasApprovedKenyanId(identity) {
-      const { result, state, approvedChecks } = await decision(identity);
-      return result.environment === settings.environment && state === "approved" && approvedChecks.some((check) => settings.environment === "sandbox" ||
-        (["KE", "KEN"].includes(check.issuing_state) &&
-          ["ID", "ID CARD", "IDENTITY CARD"].includes(String(check.document_type).trim().toUpperCase().replaceAll("_", " "))));
+      return (await approvedNationalIds(identity)).length > 0;
+    },
+
+    async matchesApprovedNationalId(identity, number) {
+      return (await approvedNationalIds(identity)).some((check) => {
+        const recorded = check.personal_number || check.document_number;
+        return typeof recorded === "string" && recorded.replace(/[ -]/g, "").toUpperCase() === number;
+      });
     },
   };
 }

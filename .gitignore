@@ -3,3 +3,6 @@
 /.wrangler/
 /.dev.vars*
 /.env*
+/supabase/.branches/
+/supabase/.temp/
+/supabase/.env*

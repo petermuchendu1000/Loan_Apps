@@ -1,0 +1,7 @@
+project_id = "tala-kenya"
+
+[api]
+schemas = ["public", "graphql_public", "tala_api"]
+
+[functions.mpesa-callback]
+verify_jwt = false

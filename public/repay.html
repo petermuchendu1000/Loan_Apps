@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en-KE">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#f7f9f3">
+  <title>Loan repayment | Tala Kenya</title>
+  <link rel="icon" href="/assets/tala-app-icon.png">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/borrow.css">
+  <link rel="stylesheet" href="/verify.css">
+  <script type="module" src="/repay.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="/" aria-label="Tala Kenya home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-market">Kenya</span>
+      </a>
+      <nav class="portal-nav" aria-label="Repayment navigation">
+        <a class="text-link" href="/signin?next=%2Frepay">Account</a>
+        <a class="button button-header" href="https://tala.co.ke/contact/">Help</a>
+      </nav>
+    </div>
+  </header>
+  <main class="wrap portal verification" id="main">
+    <div class="verification-layout repayment-layout">
+      <section class="portal-heading">
+        <h1>Repay your Tala loan.</h1>
+        <p>Make a full or partial payment and check when it reaches your Tala balance.</p>
+      </section>
+      <section class="portal-card verification-card" id="repayment" aria-label="Online repayment" aria-busy="true">
+        <p role="status">Checking repayment options…</p>
+      </section>
+      <section class="portal-card repayment-paybill" aria-labelledby="paybill">
+        <h2 id="paybill">Pay with Paybill</h2>
+        <dl class="summary-rows">
+          <div><dt>Business number</dt><dd><strong>851900</strong></dd></div>
+          <div><dt>Account number</dt><dd>Your registered Tala mobile number</dd></div>
+        </dl>
+        <p>On your phone, open M-PESA, choose <strong>Lipa na M-PESA</strong>, then <strong>Pay Bill</strong>. Enter the details and amount, then check that the recipient is <strong>Tala Mobile</strong> before approving.</p>
+        <a class="text-link" href="https://tala.co.ke/loan-app-help/how-to-repay/">Tala’s repayment instructions</a>
+      </section>
+    </div>
+    <div class="portal-footer">
+      <a href="https://tala.co.ke/contact/">Contact Tala support</a>
+      <a href="https://tala.co.ke/privacy-policy-ke/">Tala privacy policy</a>
+    </div>
+  </main>
+</body>
+</html>

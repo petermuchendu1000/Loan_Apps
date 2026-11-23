@@ -52,7 +52,7 @@ export function createCaaSClient({ baseUrl, clientId, clientSecret, fetcher = fe
 
   async function send(path, init) {
     const response = await fetcher(prefix + path, {
-      ...init, redirect: "error", signal: AbortSignal.timeout(15_000),
+      ...init, redirect: "manual", signal: AbortSignal.timeout(15_000),
     });
     const body = await response.json().catch(() => null);
     if (!response.ok || !body ||

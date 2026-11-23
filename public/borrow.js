@@ -224,6 +224,7 @@ async function api(path = "", settings) {
     }
   }
   const payload = await response.json();
+  if (response.status === 401 && payload.signIn) location.replace("/signin?next=%2Fborrow");
   if (!response.ok) throw new Error(payload.error ?? "Unable to complete the request.");
   return payload;
 }
